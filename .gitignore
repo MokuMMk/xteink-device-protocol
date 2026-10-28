@@ -1,0 +1,6 @@
+﻿__pycache__/
+*.pyc
+.venv/
+sdcard/
+qr-bind.png
+*.log
