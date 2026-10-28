@@ -24,8 +24,22 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-APPID = "cl-20260508"
-SECRET = "3d3f2e6d-9745-79eb-ad19-9b33e5b4a424"  # 固件常量 / firmware constant
+APPID = os.environ.get("XTEINK_APP_ID", "cl-20260508")
+# 仓库不保存握手密钥：请从你自己设备的固件镜像中提取 36 位 GUID，写入 XTEINK_SECRET。
+# The handshake secret is never committed; extract the 36-char GUID from your own firmware
+# image and expose it as XTEINK_SECRET.
+SECRET = os.environ.get("XTEINK_SECRET", "").strip()
+MASKED_SECRET = "3d*****24"
+
+
+def require_secret():
+    """返回握手密钥；缺省时提示从固件提取。/ Return the secret or explain how to supply it."""
+    if not SECRET:
+        raise RuntimeError(
+            "XTEINK_SECRET 未设置：请从设备固件镜像中提取 36 位 GUID 后设置环境变量，"
+            "例如 XTEINK_SECRET=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx（见 docs/protocol.md）"
+        )
+    return SECRET
 BASE = "https://api-prod.xteink.cn"
 TOKEN_PATH = "/api/v1/third-party-device/token"
 PULL_PATH = "/api/v1/third-party-device/tasks/pull?limit=20"
@@ -48,7 +62,7 @@ def sign(timestamp, nonce, identity):
         timestamp,
         nonce,
     )
-    return hmac.new(SECRET.encode(), message.encode(), hashlib.sha256).hexdigest()
+    return hmac.new(require_secret().encode(), message.encode(), hashlib.sha256).hexdigest()
 
 
 def new_identity():
@@ -221,13 +235,13 @@ def build_qr_envelope(identity, timestamp, nonce, firmware_name=None):
         "timestamp": timestamp,
         "nonce": nonce,
     }, separators=(",", ":"))
-    key = hashlib.sha256(SECRET.encode()).digest()
+    key = hashlib.sha256(require_secret().encode()).digest()
     iv = secrets.token_bytes(12)
     sealed = AESGCM(key).encrypt(iv, payload.encode(), None)   # ciphertext + 16B tag
     ciphertext, tag = sealed[:-16], sealed[-16:]
     p, i, t = _b64u(ciphertext), _b64u(iv), _b64u(tag)
     message = "%s.%s.%s.%s" % (APPID, p, i, t)
-    signature = hmac.new(SECRET.encode(), message.encode(), hashlib.sha256).hexdigest()
+    signature = hmac.new(require_secret().encode(), message.encode(), hashlib.sha256).hexdigest()
     return json.dumps({
         "appid": APPID,
         "firmware_name": firmware_name or identity.get("firmware_name") or FIRMWARE_NAME,

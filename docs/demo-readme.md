@@ -31,7 +31,7 @@ POST https://api-prod.xteink.cn/api/v1/third-party-device/token
 体 / body:   {appid, timestamp, nonce, sign}
 sign = hex(HMAC-SHA256(key=GUID, msg="appid.chip_id.bluetooth_mac.wifi_mac.timestamp.nonce"))
 appid  = "cl-20260508"
-GUID   = "3d3f2e6d-9745-79eb-ad19-9b33e5b4a424"
+GUID   = "3d*****24"   # 仓库不保存全文，从固件镜像提取 / extract from firmware
 nonce  = 32 位小写 hex（16 字节随机数）
 ```
 

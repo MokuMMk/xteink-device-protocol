@@ -31,15 +31,19 @@ def b64d(text):
 
 
 def main():
+    try:
+        secret = cloud.require_secret()
+    except RuntimeError as error:
+        raise SystemExit("提示：%s" % error)
     envelope = json.loads(cloud.build_qr_envelope(IDENTITY, 1793183000, "0011223344556677"))
-    key = hashlib.sha256(cloud.SECRET.encode()).digest()
+    key = hashlib.sha256(secret.encode()).digest()
     plain = AESGCM(key).decrypt(b64d(envelope["iv"]),
                                 b64d(envelope["payload"]) + b64d(envelope["tag"]), None)
     print("payload:", plain.decode())
 
     message = "%s.%s.%s.%s" % (envelope["appid"], envelope["payload"],
                                envelope["iv"], envelope["tag"])
-    expected = hmac.new(cloud.SECRET.encode(), message.encode(), hashlib.sha256).hexdigest()
+    expected = hmac.new(secret.encode(), message.encode(), hashlib.sha256).hexdigest()
     print("sign match:", expected == envelope["sign"])
     print("fields:", sorted(envelope))
     missing = {"appid", "firmware_name", "payload", "iv", "tag", "sign"} - set(envelope)

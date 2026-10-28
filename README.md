@@ -35,6 +35,24 @@ python python/device_sim.py --watch --timeout 900
 
 模拟器把设备身份、令牌和书籍都放在本地 `sdcard/` 目录，不会上传任何东西到设备。
 
+## 握手密钥怎么来 / Supplying the secret
+
+仓库**不保存**握手密钥（`3d*****24`）。你需要：
+
+1. 从自己设备可获得的固件镜像里提取该 36 位 GUID（固件应用段字符串，或你已有的分析记录）；
+2. 通过环境变量传入：
+
+```bash
+# Windows PowerShell
+$env:XTEINK_SECRET = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# bash
+export XTEINK_SECRET="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+未设置时脚本会直接报错并提示，不会回退到任何内置值。appid 可用 `XTEINK_APP_ID` 覆盖，
+默认 `cl-20260508`。
+
 ## 已确认的事实 / Verified behaviour
 
 - 签名与二维码信封在真实服务端和真实 App 上均验证通过（绑定、拉任务、下载、回执全链路）。

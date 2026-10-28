@@ -8,12 +8,13 @@
 | --- | --- |
 | 服务地址 | `https://api-prod.xteink.cn` |
 | 渠道 appid | `cl-20260508` |
-| 握手密钥 | `3d3f2e6d-9745-79eb-ad19-9b33e5b4a424`（GUID 字符串，同时用于 HMAC 与 AES 密钥派生） |
+| 握手密钥 | `3d*****24`（36 位 GUID，同时用于 HMAC 与 AES 密钥派生）。**仓库不提供全文**，请从你自己设备的固件镜像中提取 |
 | 传输 | HTTPS，JSON |
 | 身份 | 请求头 `X-Chip-Id` / `X-Wifi-Mac` / `X-Bluetooth-Mac` |
 | 分页 | `tasks/pull?limit=20` |
 
-> 以上常量来自公开固件镜像中的字符串；不同固件/渠道可能不同。
+> appid 与密钥都来自公开固件镜像中的字符串；不同固件/渠道可能不同。
+> 密钥不在本仓库保存：提取后通过环境变量 `XTEINK_SECRET` 传入（见 README）。
 
 ## 2. 签名 / Signature
 
